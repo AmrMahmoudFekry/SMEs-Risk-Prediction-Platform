@@ -13,7 +13,7 @@ class Notification(Base):
     body = Column(String(1000), nullable=True)
     notification_type = Column(String(100), nullable=False)
     is_read = Column(Boolean, default=False)
-    metadata = Column(JSON, nullable=True)
+    extra_metadata = Column("metadata", JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="notifications")

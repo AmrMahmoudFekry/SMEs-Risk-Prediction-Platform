@@ -10,7 +10,7 @@ class ReportVersion(Base):
     report_id = Column(Integer, ForeignKey("reports.id"), nullable=False)
     version = Column(String(50), nullable=False)
     file_url = Column(String(500), nullable=False)
-    metadata = Column(JSON, nullable=True)
+    extra_metadata = Column("metadata", JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     report = relationship("Report", back_populates="versions")

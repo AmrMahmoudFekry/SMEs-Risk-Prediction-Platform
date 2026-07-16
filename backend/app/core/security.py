@@ -1,4 +1,3 @@
-
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
@@ -9,7 +8,13 @@ SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# استخدام bcrypt_sha256 كـ scheme أساسي (يحل قيود bcrypt الأصلي على طول 72 بايت
+# للباسورد عبر عمل SHA256 hash مبدئي)، مع الإبقاء على bcrypt للتوافق مع أي
+# هاشات قديمة تم إنشاؤها قبل هذا التعديل.
+pwd_context = CryptContext(
+    schemes=["bcrypt_sha256", "bcrypt"],
+    deprecated="auto",
+)
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)

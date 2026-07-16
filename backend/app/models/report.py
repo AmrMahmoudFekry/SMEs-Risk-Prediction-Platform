@@ -13,9 +13,12 @@ class Report(Base):
     description = Column(String(500), nullable=True)
     status = Column(String(50), nullable=False, default="generated")
     file_url = Column(String(500), nullable=True)
-    metadata = Column(JSON, nullable=True)
+    extra_metadata = Column("metadata", JSON, nullable=True)
     created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     assessment = relationship("Assessment", back_populates="reports")
+    versions = relationship(
+        "ReportVersion", back_populates="report", cascade="all, delete-orphan"
+    )

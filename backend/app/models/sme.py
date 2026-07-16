@@ -14,7 +14,7 @@ class SME(Base):
     ownership_type = Column(String(100), nullable=True)
     registration_date = Column(DateTime, nullable=True)
     status = Column(String(50), nullable=False, default="active")
-    metadata = Column(JSON, nullable=True)
+    extra_metadata = Column("metadata", JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

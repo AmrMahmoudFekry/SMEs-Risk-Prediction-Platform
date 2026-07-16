@@ -9,12 +9,13 @@ class FinancialAIAnalyzer:
     def __init__(self):
         """تهيئة الاتصال بنموذج Gemini"""
         self.api_key = settings.GEMINI_API_KEY
+        self.model_name = settings.GEMINI_MODEL_NAME
         self.is_configured = False
-        
+
         if self.api_key:
             try:
                 genai.configure(api_key=self.api_key)
-                self.model = genai.GenerativeModel('gemini-pro')
+                self.model = genai.GenerativeModel(self.model_name)
                 self.is_configured = True
             except Exception as e:
                 print(f"Failed to configure Gemini API: {e}")
@@ -43,7 +44,7 @@ class FinancialAIAnalyzer:
         1. Key Risk Drivers: Bullet points explaining which financial metrics are driving the risk score.
         2. Final Recommendation: State clearly "Approve", "Reject", or "Conditional Approval", followed by a one-sentence justification.
         """
-        
+
         try:
             response = self.model.generate_content(prompt)
             if response and response.text:

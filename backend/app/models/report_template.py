@@ -10,6 +10,6 @@ class ReportTemplate(Base):
     description = Column(String(500), nullable=True)
     template_type = Column(String(100), nullable=False)
     content = Column(Text, nullable=False)
-    metadata = Column(JSON, nullable=True)
+    extra_metadata = Column("metadata", JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
