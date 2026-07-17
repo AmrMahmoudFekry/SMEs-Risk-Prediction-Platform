@@ -16,6 +16,7 @@ class Assessment(Base):
     status = Column(String(50), nullable=False, default="completed")
     features_json = Column(JSON, nullable=False)
     shap_values_json = Column(JSON, nullable=False)
+    recommendations_json = Column(JSON, nullable=True)
     ai_insights = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

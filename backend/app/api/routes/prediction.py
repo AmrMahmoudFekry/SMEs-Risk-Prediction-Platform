@@ -1,14 +1,15 @@
 ﻿from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, UploadFile, File
 from sqlalchemy.orm import Session
-from typing import Dict, Any
 
 from app.db.database import get_db
 from app.services.assessment_service import AssessmentService
 from app.api.dependencies import get_current_user
 from app.schemas.assessment_schema import AssessmentCreate, AssessmentResponse
+from app.core.exceptions import SMENotFoundError, SMEAccessDeniedError
 from app.db.models import User
 
 router = APIRouter()
+
 
 @router.post("/single", response_model=AssessmentResponse)
 async def predict_single_sme(
@@ -17,24 +18,36 @@ async def predict_single_sme(
     db: Session = Depends(get_db),
 ):
     """
-    نقطة النهاية الخاصة بالتقييم الفردي المرتبط بالمستخدم.
+    نقطة النهاية الخاصة بالتقييم الفردي، مرتبطة بالمستخدم الحالي ومؤسسته.
+    يتضمن الرد: درجة المخاطرة، تفسير SHAP، توصيات حتمية، وسرد استشاري
+    مبني على الذكاء الاصطناعي التوليدي.
     """
     try:
         assessment_service = AssessmentService(db)
         result = assessment_service.create_assessment(
             sme_id=assessment_in.sme_id,
             user_id=current_user.id,
+            organization_id=current_user.organization_id,
             financials=assessment_in.financials,
+            lang=assessment_in.lang,
         )
         return result
+    except SMENotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except SMEAccessDeniedError as e:
+        raise HTTPException(status_code=403, detail=str(e))
     except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=f"Model unavailable: {str(e)}")
+    except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
 
 
 @router.post("/batch")
 async def predict_batch_sme(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
     """
-    نقطة النهاية الخاصة برفع ملفات CSV لتقييم آلاف الشركات دفعة واحدة
+    نقطة النهاية الخاصة برفع ملفات CSV لتقييم آلاف الشركات دفعة واحدة.
     """
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="Only CSV files are allowed.")

@@ -7,7 +7,7 @@ import traceback
 from app.core.config import settings
 
 # ضروري: يجب استيراد هذا الكلاس صراحةً عشان joblib/pickle يقدر يوصل لنفس
-# الـ module path اللي اتحفظ بيه النموذج وقت التدريب (train_pipeline.py)
+# الـ module path اللي اتحفظ بيه النموذج وقت التدريب (app/ml/train_pipeline.py)
 from app.ml.feature_engineering import SMEFeatureEngineer, TRAINING_COLUMN_ORDER  # noqa: F401
 
 
@@ -50,8 +50,12 @@ class EnterpriseMLService:
             return "Medium Risk"
         return "Low Risk"
 
-    def _prepare_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
-        """التحقق من الأعمدة المطلوبة وإعادة ترتيبها لتطابق ترتيب التدريب."""
+    def prepare_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        التحقق من وجود كل الأعمدة المطلوبة وإعادة ترتيبها لتطابق ترتيب
+        بيانات التدريب تمامًا. هذه الدالة عامة (public) لأنها تُستخدم أيضًا
+        من قبل shap_service.py.
+        """
         missing = [c for c in TRAINING_COLUMN_ORDER if c not in df.columns]
         if missing:
             raise ValueError(f"Missing required model input features: {', '.join(missing)}")
@@ -65,7 +69,7 @@ class EnterpriseMLService:
 
         try:
             df_input = pd.DataFrame([sme_data])
-            df_input = self._prepare_dataframe(df_input)
+            df_input = self.prepare_dataframe(df_input)
 
             probabilities = model.predict_proba(df_input)[0]
             risk_score = round(float(probabilities[1] * 100), 2)
@@ -92,7 +96,7 @@ class EnterpriseMLService:
         try:
             df = pd.read_csv(io.BytesIO(file_content))
             df.columns = df.columns.str.lower().str.strip().str.replace(" ", "_")
-            df = self._prepare_dataframe(df)
+            df = self.prepare_dataframe(df)
 
             probabilities_batch = model.predict_proba(df)
 
