@@ -18,3 +18,4 @@ class Organization(Base):
     smes = relationship("SME", back_populates="organization", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLog", back_populates="organization", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="organization", cascade="all, delete-orphan")
+    batch_jobs = relationship("BatchAssessmentJob", back_populates="organization", cascade="all, delete-orphan")

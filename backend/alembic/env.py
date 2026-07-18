@@ -14,12 +14,18 @@ from app.db import models  # noqa: F401
 config = context.config
 
 # فرض استخدام رابط قاعدة البيانات من إعدادات التطبيق (settings)، بدلاً من
-# الاعتماد على القيمة الثابتة الموجودة في alembic.ini، لضمان اتساق مصدر
-# الحقيقة بين التطبيق نفسه والمهاجرات
+# الاعتماد على القيمة الثابتة الموجودة في alembic.ini
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
+# تفعيل إعدادات الـ logging من alembic.ini إن كانت موجودة وصحيحة الصياغة.
+# لو الملف ناقص أقسام logging (مشكلة شائعة بعد alembic init)، نتجاهل
+# الخطأ بدل ما نوقف تنفيذ المهاجرات بالكامل — الـ logging تفصيلة ثانوية
+# ومش المفروض توقف عملية حرجة زي schema migration.
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    try:
+        fileConfig(config.config_file_name)
+    except Exception as e:
+        print(f"Warning: could not configure logging from alembic.ini ({e}). Continuing without it.")
 
 # الـ metadata المرجعية التي سيقارن بها Alembic عند autogenerate
 target_metadata = Base.metadata

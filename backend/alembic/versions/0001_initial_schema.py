@@ -20,7 +20,7 @@ depends_on = None
 def upgrade() -> None:
     op.create_table(
         "organizations",
-        sa.Column("id", sa.Integer(), primary_key=True, index=True),
+        sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("name", sa.String(length=255), nullable=False, unique=True),
         sa.Column("tenant_code", sa.String(length=100), nullable=False, unique=True),
         sa.Column("industry", sa.String(length=100), nullable=True),
@@ -32,7 +32,7 @@ def upgrade() -> None:
 
     op.create_table(
         "roles",
-        sa.Column("id", sa.Integer(), primary_key=True, index=True),
+        sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("name", sa.String(length=100), nullable=False, unique=True),
         sa.Column("description", sa.String(length=255), nullable=True),
     )
@@ -40,7 +40,7 @@ def upgrade() -> None:
 
     op.create_table(
         "permissions",
-        sa.Column("id", sa.Integer(), primary_key=True, index=True),
+        sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("code", sa.String(length=100), nullable=False, unique=True),
         sa.Column("name", sa.String(length=255), nullable=False),
         sa.Column("description", sa.String(length=255), nullable=True),
@@ -55,7 +55,7 @@ def upgrade() -> None:
 
     op.create_table(
         "users",
-        sa.Column("id", sa.Integer(), primary_key=True, index=True),
+        sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("organization_id", sa.Integer(), sa.ForeignKey("organizations.id"), nullable=False),
         sa.Column("role_id", sa.Integer(), sa.ForeignKey("roles.id"), nullable=False),
         sa.Column("name", sa.String(length=255), nullable=False),
@@ -71,7 +71,7 @@ def upgrade() -> None:
 
     op.create_table(
         "smes",
-        sa.Column("id", sa.Integer(), primary_key=True, index=True),
+        sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("organization_id", sa.Integer(), sa.ForeignKey("organizations.id"), nullable=False),
         sa.Column("legal_name", sa.String(length=255), nullable=False),
         sa.Column("industry", sa.String(length=100), nullable=True),
@@ -89,7 +89,7 @@ def upgrade() -> None:
 
     op.create_table(
         "assessments",
-        sa.Column("id", sa.Integer(), primary_key=True, index=True),
+        sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("sme_id", sa.Integer(), sa.ForeignKey("smes.id"), nullable=False),
         sa.Column("user_id", sa.Integer(), sa.ForeignKey("users.id"), nullable=False),
         sa.Column("model_version", sa.String(length=100), nullable=True),
@@ -108,7 +108,7 @@ def upgrade() -> None:
 
     op.create_table(
         "predictions",
-        sa.Column("id", sa.Integer(), primary_key=True, index=True),
+        sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("assessment_id", sa.Integer(), sa.ForeignKey("assessments.id"), nullable=False),
         sa.Column("model_version", sa.String(length=100), nullable=False),
         sa.Column("probability", sa.Float(), nullable=False),
@@ -121,7 +121,7 @@ def upgrade() -> None:
 
     op.create_table(
         "reports",
-        sa.Column("id", sa.Integer(), primary_key=True, index=True),
+        sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("assessment_id", sa.Integer(), sa.ForeignKey("assessments.id"), nullable=False),
         sa.Column("report_type", sa.String(length=100), nullable=False),
         sa.Column("title", sa.String(length=255), nullable=False),
@@ -137,7 +137,7 @@ def upgrade() -> None:
 
     op.create_table(
         "report_versions",
-        sa.Column("id", sa.Integer(), primary_key=True, index=True),
+        sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("report_id", sa.Integer(), sa.ForeignKey("reports.id"), nullable=False),
         sa.Column("version", sa.String(length=50), nullable=False),
         sa.Column("file_url", sa.String(length=500), nullable=False),
@@ -148,7 +148,7 @@ def upgrade() -> None:
 
     op.create_table(
         "report_templates",
-        sa.Column("id", sa.Integer(), primary_key=True, index=True),
+        sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("name", sa.String(length=255), nullable=False, unique=True),
         sa.Column("description", sa.String(length=500), nullable=True),
         sa.Column("template_type", sa.String(length=100), nullable=False),
@@ -161,7 +161,7 @@ def upgrade() -> None:
 
     op.create_table(
         "audit_logs",
-        sa.Column("id", sa.Integer(), primary_key=True, index=True),
+        sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("user_id", sa.Integer(), sa.ForeignKey("users.id"), nullable=False),
         sa.Column("organization_id", sa.Integer(), sa.ForeignKey("organizations.id"), nullable=False),
         sa.Column("entity_type", sa.String(length=100), nullable=False),
@@ -174,7 +174,7 @@ def upgrade() -> None:
 
     op.create_table(
         "notifications",
-        sa.Column("id", sa.Integer(), primary_key=True, index=True),
+        sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("user_id", sa.Integer(), sa.ForeignKey("users.id"), nullable=True),
         sa.Column("organization_id", sa.Integer(), sa.ForeignKey("organizations.id"), nullable=False),
         sa.Column("title", sa.String(length=255), nullable=False),
@@ -188,7 +188,7 @@ def upgrade() -> None:
 
     op.create_table(
         "assessment_history",
-        sa.Column("id", sa.Integer(), primary_key=True, index=True),
+        sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("assessment_id", sa.Integer(), sa.ForeignKey("assessments.id"), nullable=False),
         sa.Column("change_type", sa.String(length=100), nullable=False),
         sa.Column("changed_by", sa.Integer(), sa.ForeignKey("users.id"), nullable=False),

@@ -34,6 +34,10 @@ google-generativeai>=0.5.0
 # PDF Reports
 reportlab>=4.1
 
+# Background Jobs (Batch Assessment)
+celery>=5.4
+redis>=5.0
+
 # Utilities
 python-dotenv>=1.0.0
 requests>=2.31

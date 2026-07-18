@@ -11,6 +11,7 @@ from .report_template import ReportTemplate
 from .audit_log import AuditLog
 from .notification import Notification
 from .assessment_history import AssessmentHistory
+from .batch_job import BatchAssessmentJob
 
 __all__ = [
     "Organization",
@@ -26,4 +27,5 @@ __all__ = [
     "AuditLog",
     "Notification",
     "AssessmentHistory",
+    "BatchAssessmentJob",
 ]

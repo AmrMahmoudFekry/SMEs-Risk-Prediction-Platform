@@ -22,3 +22,4 @@ class User(Base):
     assessments = relationship("Assessment", back_populates="analyst")
     audit_logs = relationship("AuditLog", back_populates="user")
     notifications = relationship("Notification", back_populates="user")
+    batch_jobs = relationship("BatchAssessmentJob", back_populates="user")

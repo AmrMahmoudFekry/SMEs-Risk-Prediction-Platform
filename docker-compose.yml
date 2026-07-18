@@ -1,6 +1,4 @@
-﻿version: '3.8'
-
-services:
+﻿services:
   postgres:
     image: postgres:15
     container_name: sme_risk_postgres
@@ -36,8 +34,30 @@ services:
       SECRET_KEY: your-super-secret-jwt-key-2026
       ACCESS_TOKEN_EXPIRE_MINUTES: 60
       GEMINI_API_KEY: your_gemini_key_here
+      MODEL_PATH: pipeline.pkl
+      AUTO_CREATE_TABLES: "false"
     ports:
       - "8000:8000"
+    volumes:
+      - ./backend:/app
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sme_risk_worker
+    restart: unless-stopped
+    command: celery -A app.core.celery_app worker --loglevel=info
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/sme_risk_db
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: your-super-secret-jwt-key-2026
+      ACCESS_TOKEN_EXPIRE_MINUTES: 60
+      GEMINI_API_KEY: your_gemini_key_here
+      MODEL_PATH: pipeline.pkl
     volumes:
       - ./backend:/app
 

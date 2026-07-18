@@ -1,7 +1,7 @@
 import joblib
 import pandas as pd
 import numpy as np
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import io
 import traceback
 from app.core.config import settings
@@ -9,6 +9,10 @@ from app.core.config import settings
 # ضروري: يجب استيراد هذا الكلاس صراحةً عشان joblib/pickle يقدر يوصل لنفس
 # الـ module path اللي اتحفظ بيه النموذج وقت التدريب (app/ml/train_pipeline.py)
 from app.ml.feature_engineering import SMEFeatureEngineer, TRAINING_COLUMN_ORDER  # noqa: F401
+
+# أعمدة اختيارية شائعة تُستخدم كمعرّف (identifier) لكل صف في التقييم
+# الجماعي (Batch)، بدون أن تدخل في حساب النموذج نفسه
+BATCH_IDENTIFIER_CANDIDATES = ["legal_name", "company_name", "sme_name"]
 
 
 class EnterpriseMLService:
@@ -87,17 +91,34 @@ class EnterpriseMLService:
         except Exception as e:
             raise ValueError(f"Error during prediction: {str(e)}")
 
+    def _extract_identifier_column(self, df_raw: pd.DataFrame) -> Optional[str]:
+        """يحدد أول عمود معرّف (اسم شركة) موجود في الملف المرفوع، إن وُجد."""
+        for candidate in BATCH_IDENTIFIER_CANDIDATES:
+            if candidate in df_raw.columns:
+                return candidate
+        return None
+
     def process_batch_csv(self, file_content: bytes) -> List[Dict[str, Any]]:
-        """معالجة التقييم المجمع من ملف CSV."""
+        """
+        معالجة التقييم المجمع من ملف CSV. يحافظ على عمود معرّف (مثل
+        legal_name) إن وُجد في الملف الأصلي، ويعيده مع كل نتيجة لتسهيل
+        ربط النتيجة بالشركة المقابلة لها في الواجهة الأمامية.
+        """
         model = self.load_model()
         if not model:
             raise RuntimeError("Machine Learning model is not available.")
 
         try:
-            df = pd.read_csv(io.BytesIO(file_content))
-            df.columns = df.columns.str.lower().str.strip().str.replace(" ", "_")
-            df = self.prepare_dataframe(df)
+            df_raw = pd.read_csv(io.BytesIO(file_content))
+            df_raw.columns = df_raw.columns.str.lower().str.strip().str.replace(" ", "_")
 
+            if df_raw.empty:
+                raise ValueError("The uploaded CSV file contains no data rows.")
+
+            identifier_col = self._extract_identifier_column(df_raw)
+            identifiers = df_raw[identifier_col].tolist() if identifier_col else None
+
+            df = self.prepare_dataframe(df_raw)
             probabilities_batch = model.predict_proba(df)
 
             results = []
@@ -106,14 +127,16 @@ class EnterpriseMLService:
                 confidence = self.calculate_confidence(probs)
                 category = self._categorize(risk_score)
 
-                results.append(
-                    {
-                        "row_index": i + 1,
-                        "risk_score": risk_score,
-                        "risk_category": category,
-                        "confidence": confidence,
-                    }
-                )
+                row_result = {
+                    "row_index": i + 1,
+                    "risk_score": risk_score,
+                    "risk_category": category,
+                    "confidence": confidence,
+                }
+                if identifiers is not None:
+                    row_result["identifier"] = identifiers[i]
+
+                results.append(row_result)
 
             return results
         except ValueError:
