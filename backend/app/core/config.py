@@ -27,10 +27,18 @@ class Settings:
     MODEL_PATH: str = os.getenv("MODEL_PATH", "pipeline.pkl")
 
     # مفتاح ونموذج Gemini AI
-    # ملاحظة: تحقق دائمًا من اسم الموديل الحالي في وثائق Google قبل الإنتاج،
-    # لأن أسماء الموديلات القديمة (مثل gemini-pro) يتم إيقافها بمرور الوقت.
-    GEMINI_API_KEY: str = os.getenv("gemini-3.1-flash-lite", "")
-    GEMINI_MODEL_NAME: str = os.getenv("GEMINI_MODEL_NAME", "gemini-2.0-flash")
+    # ملاحظة: تحقق دائمًا من اسم الموديل الحالي في وثائق Google قبل الإنتاج.
+    # كانت هذه القيمة قبل الإصلاح: os.getenv("gemini-3.1-flash-lite", "")
+    # وهو خطأ لأن الوسيط الأول لـ os.getenv() يجب أن يكون اسم متغير البيئة
+    # (GEMINI_API_KEY) وليس اسم الموديل نفسه، مما كان يجعل المفتاح فارغًا
+    # دائمًا بصمت حتى لو تم تمريره بشكل صحيح في docker-compose.yml.
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_MODEL_NAME: str = os.getenv("GEMINI_MODEL_NAME", "gemini-3.1-flash-lite")
+
+    # التحكم في إنشاء الجداول تلقائيًا (create_all) — يُفضّل تعطيله في
+    # الإنتاج والاعتماد كليًا على Alembic migrations لضمان schema versioning
+    # آمن وقابل للتراجع (rollback) في بيئة بنكية.
+    AUTO_CREATE_TABLES: bool = os.getenv("AUTO_CREATE_TABLES", "false").lower() == "true"
 
 # إنشاء نسخة عالمية (Singleton) للإعدادات
 settings = Settings()

@@ -1,9 +1,9 @@
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.database import engine, SessionLocal
 from app.db.base import Base
 from app.db.models import Role
+from app.core.config import settings
 from app.api.routes import prediction
 from app.api.routes import analytics
 from app.api.routes import auth, reports
@@ -40,6 +40,7 @@ app.include_router(
     tags=["Credit Risk Assessment"]
 )
 
+
 def seed_default_roles():
     db = SessionLocal()
     try:
@@ -56,17 +57,24 @@ def seed_default_roles():
         db.close()
 
 
-# إنشاء جداول قاعدة البيانات تلقائياً عند أول تشغيل
-# في بيئة الإنتاج استخدم Alembic لإدارة المهاجرات
-print("Verifying database tables...")
-Base.metadata.create_all(bind=engine)
+# إنشاء جداول قاعدة البيانات تلقائيًا — معطّل افتراضيًا (AUTO_CREATE_TABLES=false).
+# في بيئة الإنتاج/البنكية، شغّل المهاجرات دائمًا عبر:
+#     alembic upgrade head
+# فعّل الفلاج ده بس في بيئة تطوير محلية سريعة بدون Alembic.
+if settings.AUTO_CREATE_TABLES:
+    print("AUTO_CREATE_TABLES=true — Verifying database tables via create_all()...")
+    Base.metadata.create_all(bind=engine)
+else:
+    print("AUTO_CREATE_TABLES=false — Schema is managed by Alembic. Run `alembic upgrade head`.")
+
 seed_default_roles()
+
 
 # مسار لفحص حالة الخادم (Health Check) - أساسي في الـ DevOps
 @app.get("/health", tags=["System"])
 def health_check():
     return {
-        "status": "Operational", 
+        "status": "Operational",
         "system": "SME Risk API",
         "database": "Connected"
     }
