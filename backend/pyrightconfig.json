@@ -1,0 +1,12 @@
+{
+  "include": ["app"],
+  "exclude": ["**/__pycache__"],
+  "typeCheckingMode": "basic",
+  "reportAttributeAccessIssue": "none",
+  "reportArgumentType": "none",
+  "reportCallIssue": "none",
+  "reportGeneralTypeIssues": "none",
+  "reportOptionalMemberAccess": "none",
+  "reportOptionalOperand": "none",
+  "reportIndexIssue": "none"
+}

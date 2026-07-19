@@ -7,6 +7,7 @@ from app.core.config import settings
 from app.api.routes import prediction
 from app.api.routes import analytics
 from app.api.routes import auth, reports
+from app.api.routes import sme
 
 # تهيئة تطبيق FastAPI بمعايير المؤسسات
 app = FastAPI(
@@ -28,6 +29,7 @@ app.add_middleware(
 
 # دمج مسارات الـ API (Routers) التي أنشأناها
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
+app.include_router(sme.router, prefix="/api/v1/smes", tags=["SME Management"])
 app.include_router(reports.router, prefix="/api/v1/reports", tags=["Enterprise Reports"])
 app.include_router(
     analytics.router,
@@ -60,7 +62,6 @@ def seed_default_roles():
 # إنشاء جداول قاعدة البيانات تلقائيًا — معطّل افتراضيًا (AUTO_CREATE_TABLES=false).
 # في بيئة الإنتاج/البنكية، شغّل المهاجرات دائمًا عبر:
 #     alembic upgrade head
-# فعّل الفلاج ده بس في بيئة تطوير محلية سريعة بدون Alembic.
 if settings.AUTO_CREATE_TABLES:
     print("AUTO_CREATE_TABLES=true — Verifying database tables via create_all()...")
     Base.metadata.create_all(bind=engine)

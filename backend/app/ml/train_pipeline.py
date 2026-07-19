@@ -14,6 +14,7 @@ from pathlib import Path
 
 import joblib
 import pandas as pd
+import numpy as np
 from sklearn.base import clone
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -117,13 +118,17 @@ def main():
     y_pred = pipeline.predict(X_test)
     y_proba = pipeline.predict_proba(X_test)[:, 1]
 
+    # zero_division=0 موجودة صراحةً هنا عشان لو فئة معينة (High Risk مثلاً)
+    # مفيهاش أي تنبؤات إيجابية في مجموعة الاختبار، الدالة ترجع 0 بشكل
+    # صريح ومقصود بدل ما ترمي UndefinedMetricWarning بصمت — سلوك واضح
+    # ومطلوب في تقرير أداء نموذج بنكي قابل للتدقيق.
     metrics = {
-        "test_accuracy": round(accuracy_score(y_test, y_pred) * 100, 2),
-        "test_precision": round(precision_score(y_test, y_pred) * 100, 2),
-        "test_recall": round(recall_score(y_test, y_pred) * 100, 2),
-        "test_f1": round(f1_score(y_test, y_pred) * 100, 2),
-        "test_roc_auc": round(roc_auc_score(y_test, y_proba) * 100, 2),
-        "features_used": features,
+    "test_accuracy": float(np.round(accuracy_score(y_test, y_pred) * 100, 2)),
+    "test_precision": float(np.round(precision_score(y_test, y_pred, zero_division=0) * 100, 2)),
+    "test_recall": float(np.round(recall_score(y_test, y_pred, zero_division=0) * 100, 2)),
+    "test_f1": float(np.round(f1_score(y_test, y_pred, zero_division=0) * 100, 2)),
+    "test_roc_auc": float(np.round(roc_auc_score(y_test, y_proba) * 100, 2)),
+    "features_used": features,
     }
 
     print("=" * 60)
@@ -132,7 +137,7 @@ def main():
     for key, value in metrics.items():
         if key != "features_used":
             print(f"  {key}: {value}")
-    print(classification_report(y_test, y_pred))
+    print(classification_report(y_test, y_pred, zero_division=0))
 
     joblib.dump(pipeline, output_dir / "pipeline.pkl")
     print(f"[OK] pipeline.pkl saved to {output_dir / 'pipeline.pkl'}")
