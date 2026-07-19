@@ -5,8 +5,10 @@
   "reportAttributeAccessIssue": "none",
   "reportArgumentType": "none",
   "reportCallIssue": "none",
+  "reportAssignmentType": "none",
   "reportGeneralTypeIssues": "none",
   "reportOptionalMemberAccess": "none",
   "reportOptionalOperand": "none",
-  "reportIndexIssue": "none"
+  "reportIndexIssue": "none",
+  "reportRedeclaration": "none"
 }

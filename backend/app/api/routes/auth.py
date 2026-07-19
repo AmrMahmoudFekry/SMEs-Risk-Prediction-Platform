@@ -5,11 +5,18 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.services.auth_service import AuthService
-from app.schemas.auth_schema import TokenResponse, UserCreate, UserOut
+from app.schemas.auth_schema import (
+    TokenResponse,
+    UserCreate,
+    UserOut,
+    OrganizationRegisterRequest,
+    OrganizationRegisterResponse,
+)
 from app.api.dependencies import get_current_user, get_current_active_admin
 from app.db.models import User
 
 router = APIRouter()
+
 
 @router.post("/login", response_model=TokenResponse)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
@@ -23,13 +30,26 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+
+@router.post("/register-organization", response_model=OrganizationRegisterResponse)
+async def register_organization(payload: OrganizationRegisterRequest, db: Session = Depends(get_db)):
+    """تسجيل مؤسسة جديدة مع إنشاء أول مستخدم Admin لها — مسار الـ onboarding الأساسي."""
+    auth_service = AuthService(db)
+    try:
+        return auth_service.register_organization(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+
 @router.post("/register", response_model=TokenResponse)
 async def register_user(user_create: UserCreate, db: Session = Depends(get_db)):
+    """تسجيل مستخدم جديد للانضمام إلى مؤسسة قائمة بالفعل عبر كود المؤسسة (tenant_code)."""
     auth_service = AuthService(db)
     try:
         return auth_service.register(user_create)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
 
 @router.get("/me", response_model=UserOut)
 async def get_current_user_profile(current_user: User = Depends(get_current_user)):
@@ -40,6 +60,7 @@ async def get_current_user_profile(current_user: User = Depends(get_current_user
         organization_id=current_user.organization_id,
         role=current_user.role.name if current_user.role else "User",
     )
+
 
 @router.get("/users", response_model=List[UserOut])
 async def list_users(current_user: User = Depends(get_current_active_admin), db: Session = Depends(get_db)):
