@@ -1,3 +1,5 @@
+'use client';
+
 // src/app/(dashboard)/layout.tsx
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';

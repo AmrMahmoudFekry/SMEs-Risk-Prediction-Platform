@@ -12,6 +12,7 @@
     AuditLog,
     Notification,
     AssessmentHistory,
+    BatchAssessmentJob,
 )
 
 __all__ = [
@@ -28,4 +29,5 @@ __all__ = [
     "AuditLog",
     "Notification",
     "AssessmentHistory",
+    "BatchAssessmentJob",
 ]

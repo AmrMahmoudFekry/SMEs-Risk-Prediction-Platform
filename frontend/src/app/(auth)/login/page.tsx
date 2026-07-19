@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Landmark, Lock, Mail, Loader2, ShieldCheck, ArrowRight } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
+import { getErrorMessage } from '@/lib/get-error-message';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -35,7 +36,7 @@ export default function LoginPage() {
       localStorage.setItem('access_token', response.data.access_token);
       router.push('/executive');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Invalid credentials. Please try again.');
+      setError(getErrorMessage(err, 'Invalid credentials. Please try again.'));
     } finally {
       setIsLoading(false);
     }

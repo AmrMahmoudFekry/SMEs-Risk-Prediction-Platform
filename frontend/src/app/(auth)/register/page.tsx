@@ -13,6 +13,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
+import { getErrorMessage } from '@/lib/get-error-message';
 
 type Mode = 'create' | 'join';
 
@@ -107,7 +108,7 @@ function CreateOrganizationForm() {
       setTenantCode(response.data.tenant_code);
       setTimeout(() => router.push('/executive'), 1800);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Could not create your institution.');
+      setError(getErrorMessage(err, 'Could not create your institution.'))
     } finally {
       setIsLoading(false);
     }
@@ -214,7 +215,7 @@ function JoinOrganizationForm() {
       localStorage.setItem('access_token', response.data.access_token);
       router.push('/executive');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Could not join this institution.');
+      setError(getErrorMessage(err, 'Could not join this institution.'));
     } finally {
       setIsLoading(false);
     }
