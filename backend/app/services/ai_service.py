@@ -1,21 +1,23 @@
 # backend/app/services/ai_service.py
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from typing import Dict, Any
 from app.core.config import settings
 import traceback
 
+
 class FinancialAIAnalyzer:
     def __init__(self):
-        """تهيئة الاتصال بنموذج Gemini"""
+        """تهيئة الاتصال بنموذج Gemini عبر الـ google-genai SDK الحديث."""
         self.api_key = settings.GEMINI_API_KEY
         self.model_name = settings.GEMINI_MODEL_NAME
         self.is_configured = False
+        self.client = None
 
         if self.api_key:
             try:
-                genai.configure(api_key=self.api_key)
-                self.model = genai.GenerativeModel(self.model_name)
+                self.client = genai.Client(api_key=self.api_key)
                 self.is_configured = True
             except Exception as e:
                 print(f"Failed to configure Gemini API: {e}")
@@ -27,7 +29,7 @@ class FinancialAIAnalyzer:
         توليد تحليل مالي دقيق وتوصية ائتمانية.
         تمت صياغة الـ Prompt للحصول على رد بنكي احترافي.
         """
-        if not self.is_configured or not hasattr(self, 'model'):
+        if not self.is_configured or not self.client:
             return "AI Analysis unavailable: API configuration missing or invalid."
 
         prompt = f"""
@@ -46,13 +48,21 @@ class FinancialAIAnalyzer:
         """
 
         try:
-            response = self.model.generate_content(prompt)
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.2,
+                    max_output_tokens=2048,
+                ),
+            )
             if response and response.text:
                 return response.text
             return "AI Analysis completed but returned no insights."
         except Exception as e:
             traceback.print_exc()
             return f"Error communicating with AI service: {str(e)}"
+
 
 # إنشاء نسخة (Instance) جاهزة للاستخدام في مسارات الـ API
 ai_analyzer = FinancialAIAnalyzer()

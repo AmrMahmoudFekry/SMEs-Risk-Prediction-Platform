@@ -1,0 +1,20 @@
+{
+  "test_accuracy": 92.01,
+  "test_precision": 93.47,
+  "test_recall": 89.24,
+  "test_f1": 91.31,
+  "test_roc_auc": 98.01,
+  "features_used": [
+    "credit_amount",
+    "monthly_income_avg",
+    "total_deposits_3m",
+    "nsf_count_3m",
+    "negative_days_3m",
+    "business_age_months",
+    "dti_monthly",
+    "owner_percentage",
+    "owner_credit_score",
+    "revenue_volatility_3m",
+    "request_ratio"
+  ]
+}
